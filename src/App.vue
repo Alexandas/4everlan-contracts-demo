@@ -141,7 +141,7 @@ export default class App extends Vue {
 	name = 'FundWallet'
 	version = 'V1'
 
-	uuid = Buffer.alloc(32, 1)
+	uuid = Buffer.alloc(32, 2)
 	provider = '0xF1658C608708172655A8e70a1624c29F956Ee63D'
 
 	async created() {
@@ -236,7 +236,9 @@ export default class App extends Vue {
 		if (!from) {
 			return
 		}
-		const isProvider = await dstcontracts.ProviderRegistry.isProvider(from)
+		const isProvider = await dstcontracts.ProviderRegistry.isProvider(
+			this.provider
+		)
 		console.log('isProvider', isProvider)
 		const tx = await dstcontracts.ProviderController.registerAccount(
 			this.uuid,
@@ -369,12 +371,19 @@ export default class App extends Vue {
 	async paySrcChain() {
 		const account = this.$store.state.account
 		console.log('account', account)
+		const uuidRegistered = await srccontracts.ProviderController.accountExists(
+			this.provider,
+			this.uuid
+		)
+		if (!uuidRegistered) {
+			throw 'account is not registered'
+		}
 		const oneGB = 1 << 30
 		const buildingTimeAmount = 200 * 60 // 200 minutes
 		const bandwidthAmount = oneGB //100 * 1024 * 1024 * 1024 //100GB
 		const arStorageAmount = oneGB //1 * 1024 * 1024 // 100GB
 		let ipfsStorageAmount = oneGB //100 * 1024 * 1024 * 1024 // 100GB
-		let ipfsExpiration = 3600 // 3600
+		let ipfsExpiration = 3600 * 2 // 3600
 		const buildingTimeFee = await srccontracts.DstChainPayment.getValueOf(
 			this.provider,
 			ResourceType.BuildingTime,
@@ -435,6 +444,7 @@ export default class App extends Vue {
 				throw 'invalid params'
 			}
 		}
+
 		const nonce = Math.floor(Date.now() / 1000)
 		const payloads = [
 			{
@@ -482,13 +492,20 @@ export default class App extends Vue {
 			{ value: messageFee }
 		)
 		console.log('tx', tx)
-		const receipt = await tx.wait(1)
+		const receipt = await tx.wait()
 		console.log('receipt', receipt)
 	}
 
 	async payDstChain() {
 		const account = this.$store.state.account
 		console.log('account', account)
+		const uuidRegistered = await srccontracts.ProviderController.accountExists(
+			this.provider,
+			this.uuid
+		)
+		if (!uuidRegistered) {
+			throw 'account is not registered'
+		}
 		const oneGB = 1 << 30
 		const buildingTimeAmount = 200 * 60 // 200 minutes
 		const bandwidthAmount = oneGB //100 * 1024 * 1024 * 1024 //100GB

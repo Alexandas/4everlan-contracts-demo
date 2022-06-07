@@ -18,6 +18,8 @@ import {
 	BuildingTimeController,
 	IPFSStorageController__factory,
 	IPFSStorageController,
+	ProviderController__factory,
+	ProviderController
 } from '4everland-contracts'
 import { Bridge__factory, Bridge } from '@/sgn/contract/typechain'
 import {
@@ -29,7 +31,8 @@ import {
 	MumbaiARStorageController,
 	MumbaiBandwidthController,
 	MumbaiBuildingTimeController,
-	MumbaiIPFSStorageController
+	MumbaiIPFSStorageController,
+	MumbaiProviderController
 } from './contracts-addr'
 
 class SrcChainContracts extends Contracts {
@@ -80,6 +83,10 @@ class SrcChainContracts extends Contracts {
 
 	public get IPFSStorageController(): IPFSStorageController {
 		return IPFSStorageController__factory.connect(MumbaiIPFSStorageController, this.dstProvider)
+	}
+
+	public get ProviderController(): ProviderController {
+		return ProviderController__factory.connect(MumbaiProviderController, this.dstProvider)
 	}
 }
 
