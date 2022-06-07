@@ -42,7 +42,7 @@ class SrcChainContracts extends Contracts {
 	constructor() {
 		super()
 		// mumbai rpc
-		this.dstProvider = new providers.JsonRpcProvider('https://matic-mumbai.chainstacklabs.com')
+		this.dstProvider = new providers.JsonRpcProvider('https://polygon-mumbai.g.alchemy.com/v2/MGcgBRN-uuuG6x1qaI-xchQMpebh_aN6')
 	}
 
 	public get GoerliUSDC(): IERC20 {
