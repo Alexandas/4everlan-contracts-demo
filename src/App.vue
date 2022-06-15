@@ -136,12 +136,7 @@ enum ResourceType {
 @Component
 export default class App extends Vue {
 	core!: Core
-	balance = '-'
-
-	name = 'FundWallet'
-	version = 'V1'
-
-	uuid = Buffer.alloc(32, 2)
+	uuid = Buffer.alloc(32, 6)
 	provider = '0xF1658C608708172655A8e70a1624c29F956Ee63D'
 
 	async created() {
@@ -236,13 +231,41 @@ export default class App extends Vue {
 		if (!from) {
 			return
 		}
-		const isProvider = await dstcontracts.ProviderRegistry.isProvider(
-			this.provider
+		const oneGB = 1 << 30
+		const payloads = [
+			{
+				resourceType: 1,
+				amounts: [12000],
+			},
+			{
+				resourceType: 2,
+				amounts: [oneGB],
+			},
+			{
+				resourceType: 3,
+				amounts: [oneGB],
+			},
+			{
+				resourceType: 4,
+				amounts: [oneGB, 3600],
+			},
+		]
+		const data = dstcontracts.ProviderController.interface.encodeFunctionData(
+			'registerAndDripMult',
+			[[this.uuid], [payloads]]
 		)
-		console.log('isProvider', isProvider)
-		const tx = await dstcontracts.ProviderController.registerAccount(
-			this.uuid,
-			Math.floor(Date.now() / 1000) + 600
+		console.log('data', data)
+		// const isProvider = await dstcontracts.ProviderRegistry.isProvider(
+		// 	this.provider
+		// )
+		// console.log('isProvider', isProvider)
+		// const tx = await dstcontracts.ProviderController.registerAccount(
+		// 	this.uuid,
+		// 	Math.floor(Date.now() / 1000) + 600
+		// )
+		const tx = await dstcontracts.ProviderController.registerAndDripMult(
+			[this.uuid],
+			[payloads]
 		)
 		console.log('tx', tx)
 	}
@@ -382,7 +405,7 @@ export default class App extends Vue {
 		const buildingTimeAmount = 200 * 60 // 200 minutes
 		const bandwidthAmount = oneGB //100 * 1024 * 1024 * 1024 //100GB
 		const arStorageAmount = oneGB //1 * 1024 * 1024 // 100GB
-		let ipfsStorageAmount = oneGB //100 * 1024 * 1024 * 1024 // 100GB
+		let ipfsStorageAmount = 0 //100 * 1024 * 1024 * 1024 // 100GB
 		let ipfsExpiration = 3600 * 2 // 3600
 		const buildingTimeFee = await srccontracts.DstChainPayment.getValueOf(
 			this.provider,
