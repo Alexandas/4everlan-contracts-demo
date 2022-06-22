@@ -1,60 +1,35 @@
 <template>
 	<div id="app">
-		<div
-			v-show="loading"
-			id="spin"
-		>
+		<div v-show="loading" id="spin">
 			<a-Spin style="margin-top: 25%; margin-left: 50%" />
 		</div>
 		<a-layout>
 			<a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
 				<div>
-					<span
-						style="width: 100px; color: white; margin-right: 2rem"
-						@click="goHome"
-					>Home</span>
-					<span
-						v-show="isConnected"
-						style="width: 100px; color: white"
-					>{{ network }}:{{ account }}</span>
-					<span
-						v-show="!isConnected"
-						style="width: 100px; color: white"
-					><a-button
-						type="primary"
-						@click="connect"
-					>
-						Connect
-					</a-button></span>
+					<span style="width: 100px; color: white; margin-right: 2rem" @click="goHome">Home</span>
+					<span v-show="isConnected" style="width: 100px; color: white">{{ network }}:{{ account }}</span>
+					<span v-show="!isConnected" style="width: 100px; color: white">
+						<a-button type="primary" @click="connect">
+							Connect
+						</a-button>
+					</span>
 					<div style="display: inline-block">
-						<a-button
-							type="primary"
-							@click="registerAccount"
-						>
+						<a-button type="primary" @click="providerSetPrice">
+							Provider Set Price
+						</a-button>
+						<a-button type="primary" @click="registerAccount">
 							Register Account
 						</a-button>
-						<a-button
-							type="primary"
-							@click="initWallet"
-						>
+						<a-button type="primary" @click="initWallet">
 							Init Wallet
 						</a-button>
-						<a-button
-							type="primary"
-							@click="paySrcChain"
-						>
+						<a-button type="primary" @click="paySrcChain">
 							Pay from src chain
 						</a-button>
-						<a-button
-							type="primary"
-							@click="payDstChain"
-						>
+						<a-button type="primary" @click="payDstChain">
 							Pay from dst chain
 						</a-button>
-						<a-button
-							type="primary"
-							@click="approveSrcChain"
-						>
+						<a-button type="primary" @click="approveSrcChain">
 							Approve src chain payment
 						</a-button>
 						<!-- <a-button
@@ -69,43 +44,26 @@
 						>
 							SafeSign
 						</a-button> -->
-						<a-button
-							type="primary"
-							@click="approveDstChain"
-						>
+						<a-button type="primary" @click="approveDstChain">
 							Approve dst chain payment
 						</a-button>
-						<a-button
-							type="primary"
-							@click="approveFundPool"
-						>
+						<a-button type="primary" @click="approveFundPool">
 							Approve FundPool
 						</a-button>
-						<a-button
-							type="primary"
-							@click="recharge"
-						>
+						<a-button type="primary" @click="recharge">
 							Recharge
 						</a-button>
-						<a-button
-							type="primary"
-							@click="bill"
-						>
+						<a-button type="primary" @click="bill">
 							SpendBill
 						</a-button>
-						<a-button
-							type="primary"
-							@click="withdraw"
-						>
+						<a-button type="primary" @click="withdraw">
 							Withdraw
 						</a-button>
 					</div>
 				</div>
 			</a-layout-header>
 			<a-layout-content :style="{ padding: '0 50px', marginTop: '64px' }">
-				<div
-					:style="{ background: '#fff', padding: '24px', minHeight: '800px' }"
-				>
+				<div :style="{ background: '#fff', padding: '24px', minHeight: '800px' }">
 					<keep-alive>
 						<router-view style="margin-left: 8px" />
 					</keep-alive>
@@ -136,7 +94,7 @@ enum ResourceType {
 @Component
 export default class App extends Vue {
 	core!: Core
-	uuid = Buffer.alloc(32, 6)
+	uuid = Buffer.alloc(32, 2)
 	provider = '0xF1658C608708172655A8e70a1624c29F956Ee63D'
 
 	async created() {
@@ -226,6 +184,45 @@ export default class App extends Vue {
 		await this.core.toggleModal()
 	}
 
+	async providerSetPrice() {
+		const adaptor = dstcontracts.ResourcePriceAdaptor
+		const oneGB = 1 << 30
+		const oneU = BigNumber.from(1e18.toString())
+		const BuildingTimePrice = oneU.mul(32).div(100).div(60 * 100)
+		const BandwidthPrice = oneU.mul(126).div(10).div(100 * oneGB)
+		const ARPrice = oneU.mul(10).div(oneGB)
+		const IPFSPrice = oneU.mul(12).div(100 * oneGB).div(30 * 24 * 3600)
+		console.log(
+			BuildingTimePrice.toString(),
+			BandwidthPrice.toString(),
+			ARPrice.toString(),
+			IPFSPrice.toString()
+		)
+		const tx = await adaptor.setPriceAdaptors(
+			[
+				{
+					resourceType: 1,
+					price: BuildingTimePrice
+				},
+				{
+					resourceType: 2,
+					price: BandwidthPrice
+				},
+				{
+					resourceType: 3,
+					price: ARPrice
+				},
+				{
+					resourceType: 4,
+					price: IPFSPrice
+				}
+			]
+		)
+		console.log('tx', tx)
+		const receipt = await tx.wait()
+		console.log('receipt', receipt)
+	}
+
 	async registerAccount() {
 		const from = this.$store.state.account
 		if (!from) {
@@ -269,6 +266,8 @@ export default class App extends Vue {
 		)
 		console.log('tx', tx)
 	}
+
+	
 
 	async initWallet() {
 		console.log('uuid', this.uuid.toString('hex'))
@@ -405,8 +404,8 @@ export default class App extends Vue {
 		const buildingTimeAmount = 200 * 60 // 200 minutes
 		const bandwidthAmount = oneGB //100 * 1024 * 1024 * 1024 //100GB
 		const arStorageAmount = oneGB //1 * 1024 * 1024 // 100GB
-		let ipfsStorageAmount = 0 //100 * 1024 * 1024 * 1024 // 100GB
-		let ipfsExpiration = 3600 * 2 // 3600
+		let ipfsStorageAmount = oneGB //100 * 1024 * 1024 * 1024 // 100GB
+		let ipfsExpiration = 3600 * 7 * 24 // 3600
 		const buildingTimeFee = await srccontracts.DstChainPayment.getValueOf(
 			this.provider,
 			ResourceType.BuildingTime,
