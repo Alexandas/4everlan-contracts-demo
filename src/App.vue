@@ -95,7 +95,7 @@ enum ResourceType {
 export default class App extends Vue {
 	core!: Core
 	uuid = Buffer.alloc(32, 2)
-	provider = '0xF1658C608708172655A8e70a1624c29F956Ee63D'
+	provider = '0xdec55a51ac7c77f505eff03bee9ddff9edb1ead6'
 
 	async created() {
 		this.core = new Core({
@@ -271,10 +271,11 @@ export default class App extends Vue {
 
 	async initWallet() {
 		console.log('uuid', this.uuid.toString('hex'))
-		const from = this.$store.state.account
-		if (!from) {
-			return
-		}
+		// const from = this.$store.state.account
+		// if (!from) {
+		// 	return
+		// }
+		const from = '0x712b4DAf0Ab3761aBAdF80BAEccba92bb120252d'
 		const isProvider = await dstcontracts.ProviderRegistry.isProvider(
 			this.provider
 		)
@@ -284,27 +285,27 @@ export default class App extends Vue {
 		const chainId = await dstcontracts.signer.getChainId()
 		const verifyingContract = dstcontracts.ProviderController.address
 		// Wallet(address provider,bytes32 account,address wallet)
-		const walletSig = await dstcontracts.signer._signTypedData(
-			{
-				name,
-				version,
-				chainId,
-				verifyingContract,
-			},
-			{
-				Wallet: [
-					{ name: 'provider', type: 'address' },
-					{ name: 'account', type: 'bytes32' },
-					{ name: 'wallet', type: 'address' },
-				],
-			},
-			{
-				provider: this.provider,
-				account: this.uuid,
-				wallet: from,
-			}
-		)
-		console.log('walletSig', walletSig)
+		// const walletSig = await dstcontracts.signer._signTypedData(
+		// 	{
+		// 		name,
+		// 		version,
+		// 		chainId,
+		// 		verifyingContract,
+		// 	},
+		// 	{
+		// 		Wallet: [
+		// 			{ name: 'provider', type: 'address' },
+		// 			{ name: 'account', type: 'bytes32' },
+		// 			{ name: 'wallet', type: 'address' },
+		// 		],
+		// 	},
+		// 	{
+		// 		provider: this.provider,
+		// 		account: this.uuid,
+		// 		wallet: from,
+		// 	}
+		// )
+		// console.log('walletSig', walletSig)
 		const doaminTypeHash = utils.keccak256(
 			Buffer.from(
 				'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
@@ -346,28 +347,28 @@ export default class App extends Vue {
 				from
 			)
 		console.log('hashTypedDataV4ForWallet', cHash)
-		const sig = walletSig
-		const address = utils.recoverAddress(hash, sig)
-		console.log('rechargeSig', walletSig, 'recoverAddress', address)
-		const tx = await dstcontracts.ProviderController.initWallet(
-			this.provider,
-			this.uuid,
-			from,
-			sig
-		)
-		console.log('tx', tx)
-		const receipt = await tx.wait()
-		console.log('receipt', receipt)
-		const walletExists = await dstcontracts.ProviderController.walletExists(
-			this.provider,
-			this.uuid
-		)
-		console.log('walletExists', walletExists)
-		const walletOf = await dstcontracts.ProviderController.walletOf(
-			this.provider,
-			this.uuid
-		)
-		console.log('walletOf', walletOf)
+		// const sig = walletSig
+		const address = utils.recoverAddress(hash, '0x660332f24d280eb0e8170ce9f501b38a6074974c3f3770640aac987536c3a230')
+		console.log('recoverAddress', address)
+		// const tx = await dstcontracts.ProviderController.initWallet(
+		// 	this.provider,
+		// 	this.uuid,
+		// 	from,
+		// 	sig
+		// )
+		// console.log('tx', tx)
+		// const receipt = await tx.wait()
+		// console.log('receipt', receipt)
+		// const walletExists = await dstcontracts.ProviderController.walletExists(
+		// 	this.provider,
+		// 	this.uuid
+		// )
+		// console.log('walletExists', walletExists)
+		// const walletOf = await dstcontracts.ProviderController.walletOf(
+		// 	this.provider,
+		// 	this.uuid
+		// )
+		// console.log('walletOf', walletOf)
 	}
 
 	async approveSrcChain() {
@@ -878,91 +879,8 @@ export default class App extends Vue {
 			this.provider
 		)
 		console.log('isProvider', isProvider)
-		// Recharge
-		// address provider,
-		// uint64 nonce,
-		// address owner,
-		// bytes32 account,
-		// uint256 amount
-		// Recharge(address provider,account,uint256 amount)
-		const name = 'FundPool'
-		const version = 'V1'
-		const chainId = await dstcontracts.signer.getChainId()
-		const verifyingContract = dstcontracts.FundPool.address
-		const amount = BigNumber.from((100e6).toString())
-		const rechargeSig = await dstcontracts.signer._signTypedData(
-			{
-				name,
-				version,
-				chainId,
-				verifyingContract,
-			},
-			{
-				Recharge: [
-					{ name: 'provider', type: 'address' },
-					{ name: 'account', type: 'bytes32' },
-					{ name: 'amount', type: 'uint256' },
-				],
-			},
-			{
-				provider: this.provider,
-				account: this.uuid,
-				amount,
-			}
-		)
-		console.log('rechargeSig', rechargeSig)
-		const doaminTypeHash = utils.keccak256(
-			Buffer.from(
-				'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-			)
-		)
-		const domainStructHash = utils.keccak256(
-			utils.defaultAbiCoder.encode(
-				['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
-				[
-					doaminTypeHash,
-					utils.keccak256(Buffer.from(name)),
-					utils.keccak256(Buffer.from(version)),
-					chainId,
-					verifyingContract,
-				]
-			)
-		)
-		const messageTypes =
-			'Recharge(address provider,bytes32 account,uint256 amount)'
-		const messageTypeHash = utils.keccak256(Buffer.from(messageTypes))
-		const messageStructHash = utils.keccak256(
-			utils.defaultAbiCoder.encode(
-				['bytes32', 'address', 'bytes32', 'uint256'],
-				[messageTypeHash, this.provider, this.uuid, amount]
-			)
-		)
-		const hash = utils.keccak256(
-			Buffer.concat([
-				Buffer.from('1901', 'hex'),
-				Buffer.from(domainStructHash.substring(2), 'hex'),
-				Buffer.from(messageStructHash.substring(2), 'hex'),
-			])
-		)
-		console.log('hash', hash)
-		const cHash = await dstcontracts.FundPool.hashTypedDataV4ForRecharge(
-			this.provider,
-			this.uuid,
-			amount
-		)
-		console.log('hashTypedDataV4ForRecharge', cHash)
-		const sig = rechargeSig
-		const address = utils.recoverAddress(hash, sig)
-		console.log('rechargeSig', rechargeSig, 'recoverAddress', address)
-
-		const data = dstcontracts.FundPool.interface.encodeFunctionData(
-			'recharge',
-			[this.provider, this.uuid, amount, sig]
-		)
-		const receipt = await dstcontracts.sendTransaction({
-			to: dstcontracts.FundPool.address,
-			data,
-		})
+		
+		const receipt = await dstcontracts.FundPool.recharge(this.provider, this.uuid, BigNumber.from('1000000'))
 		console.log('receipt', receipt)
 		const balance = await dstcontracts.FundPool.balanceOf(
 			this.provider,
