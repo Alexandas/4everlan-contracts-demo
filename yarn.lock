@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@4everland/content-id-registry-contracts@^0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@4everland/content-id-registry-contracts/-/content-id-registry-contracts-0.4.5.tgz#3891752372214d680ba63b52cb4cbdc3d7ee03dc"
-  integrity sha512-Au9XKKZp5SQn4Jq3ZNsV1XwuP35OBl5+SaxRtevH2bqCPwR7FDmOPsBmvh/W5vyDJ0DExm8900gzgLlsXqLUMA==
+"@4everland/content-id-registry-contracts@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@4everland/content-id-registry-contracts/-/content-id-registry-contracts-0.5.0.tgz#450c525bddc76d82e450cd03920549cecdfd9050"
+  integrity sha512-7tA/EctOXWbhFYf6nb3HlEyYGMk9ymUDPdqBq3+ommVZGU5zNXQndAntvYzhjCzXI6eaVexnVWOVLM/cup0kKg==
   dependencies:
     solc-0.8.9 "npm:solc@0.8.9"
     solidity-docgen "^0.5.16"

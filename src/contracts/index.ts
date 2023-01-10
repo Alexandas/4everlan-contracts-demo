@@ -19,11 +19,11 @@ class Contracts {
 	}
 
 	public get StableCoin(): ERC20 {
-		return ERC20__factory.connect('0xB1048018E1584BB514c335CcC0b3A23Bc5aC4634', this.signer)
+		return ERC20__factory.connect('0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', this.signer)
 	}
 
 	public get ContentIDRegistry(): ContentIDRegistry {
-		return ContentIDRegistry__factory.connect('0x172498e09BAA8CFeAd011396d87589067d9c0B64', this.signer)
+		return ContentIDRegistry__factory.connect('0x6E73D5827b68bCc11895CA20f915e0451c3B3FaF', this.signer)
 	}
 
 	public async chainId() {
